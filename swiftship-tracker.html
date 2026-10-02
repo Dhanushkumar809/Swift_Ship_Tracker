@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SwiftShip Tracker - Salesforce Parcel Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f5f7;--pn:#fff;--ink:#18242f;--mu:#58667a;--ln:#d6dce3;--br:#0b5cab;--bi:#fff;--kr:#a86a12;--ok:#1f7a4d;--cd:#e9edf1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12181f;--pn:#1a222b;--ink:#e4e9ee;--mu:#9aa7b6;--ln:#2b3642;--br:#5aa4ec;--bi:#0d1620;--kr:#e0a24a;--ok:#4cc08a;--cd:#222c37}}
+:root[data-theme="dark"]{--bg:#12181f;--pn:#1a222b;--ink:#e4e9ee;--mu:#9aa7b6;--ln:#2b3642;--br:#5aa4ec;--bi:#0d1620;--kr:#e0a24a;--ok:#4cc08a;--cd:#222c37}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px);scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Public Sans",system-ui,sans-serif}
+code,.mono{font-family:"IBM Plex Mono",Consolas,monospace;font-size:.88em}
+code{background:var(--cd);padding:1px 5px;border-radius:3px}
+.app{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:100%}
+aside{position:sticky;top:0;align-self:start;max-height:100dvh;overflow:auto;padding:22px 16px;border-right:1px solid var(--ln);background:var(--pn)}
+aside b{display:block;font-size:17px}
+aside .sub{color:var(--mu);font-size:13px;margin:2px 0 18px}
+#mb{display:none}
+nav a{display:block;padding:6px 10px;margin:1px 0;color:var(--mu);text-decoration:none;border-left:3px solid transparent;font-size:14px}
+nav a:hover{color:var(--ink)}
+nav a.on{color:var(--br);border-left-color:var(--br);font-weight:500;background:var(--cd)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--br);outline-offset:2px}
+main{padding:36px clamp(16px,4vw,48px) 60px;max-width:960px}
+section{padding:34px 0;border-bottom:1px solid var(--ln)}
+section:last-of-type{border:0}
+h1{font-size:32px;margin:0 0 8px;line-height:1.15}
+h2{font-size:22px;margin:0 0 6px}
+h3{font-size:15px;margin:18px 0 6px}
+p{margin:0 0 10px;max-width:70ch}
+.lead{font-size:17px;color:var(--mu)}
+.note{font-size:13px;color:var(--mu)}
+table{width:100%;border-collapse:collapse;font-size:14px;background:var(--pn);border:1px solid var(--ln)}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--ln);vertical-align:top}
+th{background:var(--cd);font-weight:500}
+.sc{overflow-x:auto;margin:10px 0}
+.demo{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;margin:18px 0 8px}
+.chat,.card,.box{background:var(--pn);border:1px solid var(--ln);border-radius:4px}
+.chat{display:flex;flex-direction:column;height:430px}
+#log{flex:1;overflow:auto;padding:12px}
+.m{margin:0 0 10px;padding:8px 10px;border-radius:4px;max-width:92%;font-size:14px}
+.m.a{background:var(--cd)}
+.m.u{background:var(--br);color:var(--bi);margin-left:auto}
+.chips{padding:0 12px 8px;display:flex;flex-wrap:wrap;gap:6px}
+.chips button,.tabs button,.fl button{font:inherit;font-size:13px;border:1px solid var(--ln);background:var(--pn);color:var(--ink);padding:4px 10px;border-radius:3px;cursor:pointer}
+.tabs button[aria-pressed=true],.fl button[aria-pressed=true]{background:var(--br);color:var(--bi);border-color:var(--br)}
+#f{display:flex;border-top:1px solid var(--ln)}
+#f input{flex:1;border:0;padding:11px 12px;font:inherit;background:transparent;color:var(--ink);min-width:0}
+#f button{border:0;background:var(--br);color:var(--bi);padding:0 18px;font:inherit;cursor:pointer}
+.card{padding:16px}
+.pid{font-size:26px;font-weight:500}
+.route{color:var(--mu);margin:2px 0 14px}
+ol.st{list-style:none;margin:0 0 14px;padding:0}
+ol.st li{position:relative;padding:0 0 12px 24px;color:var(--mu)}
+ol.st li:before{content:"";position:absolute;left:0;top:5px;width:11px;height:11px;border:2px solid var(--ln);border-radius:50%;background:var(--pn)}
+ol.st li:after{content:"";position:absolute;left:6px;top:17px;bottom:-5px;width:1px;background:var(--ln)}
+ol.st li:last-child:after{display:none}
+ol.st li.d{color:var(--ink)}
+ol.st li.d:before{background:var(--ok);border-color:var(--ok)}
+ol.st li.c{color:var(--ink);font-weight:700}
+ol.st li.c:before{background:var(--kr);border-color:var(--kr)}
+dl{display:grid;grid-template-columns:130px 1fr;gap:4px 10px;margin:0;font-size:14px}
+dt{color:var(--mu)}dd{margin:0}
+.layers{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.box{padding:12px 14px}
+.box h3{margin:0 0 6px}
+ul{margin:0;padding-left:18px}
+li{margin:2px 0}
+.flow{display:flex;align-items:stretch;overflow-x:auto;gap:0;margin:10px 0}
+.flow div{flex:0 0 auto;min-width:130px;padding:8px 10px;background:var(--pn);border:1px solid var(--ln);font-size:13px}
+.flow div+div{margin-left:18px;position:relative}
+.flow div+div:before{content:"\25B8";position:absolute;left:-15px;top:50%;margin-top:-9px;color:var(--mu)}
+.flow small{display:block;color:var(--mu)}
+pre{background:var(--cd);padding:12px;border-radius:4px;overflow-x:auto;font:13px/1.5 "IBM Plex Mono",monospace;margin:8px 0}
+.tabs,.fl{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.yes{color:var(--ok);font-weight:500}.no{color:var(--mu)}
+.rh{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0;font-size:14px}
+.rh span{border:1px solid var(--ln);background:var(--pn);padding:2px 10px;border-radius:3px}
+details{background:var(--pn);border:1px solid var(--ln);margin:6px 0;border-radius:4px}
+summary{padding:9px 12px;cursor:pointer;font-weight:500}
+details p{padding:0 12px;margin:0 0 10px;color:var(--mu)}
+.chk label{display:block;padding:7px 0;border-bottom:1px solid var(--ln)}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+select{font:inherit;padding:5px 8px;background:var(--pn);color:var(--ink);border:1px solid var(--ln);border-radius:3px}
+footer{padding-top:24px;color:var(--mu);font-size:13px}
+@media(max-width:860px){
+.app{display:block}
+aside{position:sticky;top:0;z-index:5;max-height:none;padding:10px 14px;border-right:0;border-bottom:1px solid var(--ln);padding-top:calc(10px + env(safe-area-inset-top,0px))}
+aside b{display:inline}
+aside .sub{display:none}
+#mb{display:inline-block;float:right;font:inherit;font-size:13px;padding:4px 12px;border:1px solid var(--ln);background:var(--pn);color:var(--ink);border-radius:3px}
+nav{display:none;padding-top:8px}nav.open{display:block}
+.demo,.three{grid-template-columns:1fr}
+.layers{grid-template-columns:1fr 1fr}
+h1{font-size:26px}
+}
+@media(max-width:480px){.layers{grid-template-columns:1fr}dl{grid-template-columns:110px 1fr}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+ <button id="mb" aria-expanded="false" aria-controls="nav">Sections</button>
+ <b>SwiftShip Tracker</b>
+ <div class="sub">Naan Mudhalvan<br>Salesforce project</div>
+ <nav id="nav" aria-label="Sections"></nav>
+</aside>
+<main>
+
+<section id="track" data-t="Live demo">
+ <h1>SwiftShip Tracker</h1>
+ <p class="lead">A Salesforce parcel booking and tracking system. A customer gives the Agentforce agent a parcel ID and gets the status, weight and estimated delivery date back from the Parcel record.</p>
+ <div class="demo">
+  <div class="chat">
+   <div id="log" aria-live="polite"></div>
+   <div class="chips" id="chips"></div>
+   <form id="f"><input id="q" placeholder="Track parcel P-001" autocomplete="off" aria-label="Message to agent"><button>Send</button></form>
+  </div>
+  <div class="card" id="pc"></div>
+ </div>
+ <p class="note">The demo runs on sample data in this page. In the project the agent calls the Parcel Details flow, which reads Parcel__c.</p>
+</section>
+
+<section id="problem" data-t="Problem and users">
+ <h2>Problem and users</h2>
+ <p>Customers book parcels through support calls or several apps, and have no simple way to see where a parcel is. Agents update status by hand and admins cannot see operations in one place.</p>
+ <div class="sc"><table id="ps"></table></div>
+ <h3>Who uses it</h3>
+ <div class="three">
+  <div class="box"><h3>Customer / sender</h3><p class="note">Books parcels, tracks them, receives updates through Experience Cloud or the AI agent.</p></div>
+  <div class="box"><h3>Delivery agent</h3><p class="note">Moves a parcel from Booked to Delivered and keeps the current location up to date.</p></div>
+  <div class="box"><h3>Support and admin</h3><p class="note">Support resolves delivery issues through Cases. Admins manage roles, security and dashboards.</p></div>
+ </div>
+</section>
+
+<section id="req" data-t="Requirements">
+ <h2>Requirements</h2>
+ <div class="fl" id="fr-f" role="group" aria-label="Filter functional requirements"></div>
+ <div class="sc"><table id="fr"></table></div>
+ <h3>Non-functional</h3>
+ <div class="sc"><table id="nfr"></table></div>
+</section>
+
+<section id="arch" data-t="Architecture">
+ <h2>Architecture</h2>
+ <p>Customers, agents, support staff and admins reach the system through Lightning or Experience Cloud. Behind it, four layers feed reports and dashboards.</p>
+ <div class="layers">
+  <div class="box"><h3>Data</h3><ul><li>Parcel</li><li>Delivery</li><li>Sender</li><li>Receiver</li></ul></div>
+  <div class="box"><h3>Automation</h3><ul><li>Flows</li><li>Approval processes</li><li>Apex and Batch Apex</li><li>Email alerts</li></ul></div>
+  <div class="box"><h3>AI</h3><ul><li>Agentforce</li><li>Prompt Builder</li><li>Parcel Tracking Agent</li></ul></div>
+  <div class="box"><h3>Security</h3><ul><li>Profiles and roles</li><li>Permission sets</li><li>Sharing rules</li><li>Field-level security</li></ul></div>
+ </div>
+ <h3>Technology stack</h3>
+ <div class="sc"><table id="tech"></table></div>
+</section>
+
+<section id="model" data-t="Data model">
+ <h2>Data model</h2>
+ <p>Sender and Receiver both link to Parcel. Delivery links to Parcel and Sender and holds the live location.</p>
+ <div class="tabs" id="otabs" role="group" aria-label="Objects"></div>
+ <p id="odesc"></p>
+ <div class="sc"><table id="ofields"></table></div>
+</section>
+
+<section id="auto" data-t="Automation and AI">
+ <h2>Automation and AI</h2>
+ <p>A parcel moves through four statuses. Flows update it, email alerts tell the customer at each stage, and Batch Apex handles periodic updates.</p>
+ <div class="flow" aria-label="Status lifecycle"><div>Booked</div><div>In Transit</div><div>Out for Delivery</div><div>Delivered</div></div>
+ <h3>Agent flow: Parcel Details</h3>
+ <div class="flow"><div>Start<small>Auto-launched, input: ids</small></div><div>Get Records<small>Parcel where Parcel_ID__c = ids</small></div><div>Action<small>Retrieve Parcel Details prompt</small></div><div>Assignment<small>Output = prompt response</small></div><div>End</div></div>
+ <h3>Prompt template: Retrieve_Parcel_Details</h3>
+<pre>Retrieve details from Parcel__c where Parcel_ID__c matches user input.
+
+Parcel Tracking Update
+- Parcel Name: {!$Input:Parcel__c.Name}
+- Parcel ID: {!$Input:Parcel__c.Parcel_ID__c}
+- Status: {!$Input:Parcel__c.Status__c}
+- Weight: {!$Input:Parcel__c.Weight__c}
+- Estimated Delivery Date: {!$Input:Parcel__c.Estimated_Delivery_Date__c}</pre>
+ <p>The flow is attached as an action on the Parcel Updates subagent, so the agent can call it when a customer asks about a parcel.</p>
+ <h3>Automation inventory</h3>
+ <p>Record-triggered, auto-launched and scheduled flows. Approval processes. Apex classes for parcel and delivery actions, and Batch Apex for periodic updates. Email templates for booking confirmation, delivery updates and completion.</p>
+</section>
+
+<section id="sec" data-t="Security">
+ <h2>Security</h2>
+ <div class="rh" aria-label="Role hierarchy"><span>Administrator</span>&rarr;<span>Delivery Manager</span>&rarr;<span>Agent</span>&rarr;<span>Customer</span></div>
+ <label>Profile <select id="role"></select></label>
+ <div class="sc"><table id="perm"></table></div>
+ <p id="fls" class="note"></p>
+ <p class="note">Sharing rules on Parcel__c and Delivery__c control agent and manager access. Customers only see records linked to their own Sender or Receiver details.</p>
+</section>
+
+<section id="plan" data-t="Sprint plan">
+ <h2>Sprint plan</h2>
+ <p>Agile, six sprints. Epics break into stories with story points.</p>
+ <div class="sc"><table id="sp"></table></div>
+ <p class="note" id="spt"></p>
+</section>
+
+<section id="build" data-t="Build log">
+ <h2>Build log</h2>
+ <p>How the org was configured, in the order it was built.</p>
+ <div id="ms"></div>
+</section>
+
+<section id="test" data-t="Testing">
+ <h2>Testing</h2>
+ <p>The agent was tested in the Developer Org. Tick each check to see progress.</p>
+ <div class="chk" id="chk"></div>
+ <p class="note" id="chkc"></p>
+ <p>Sandbox and UAT testing were left out. A Developer Edition org is standalone, and enterprise deployment with staging and CI/CD is outside this prototype.</p>
+</section>
+
+<section id="end" data-t="Outlook">
+ <h2>Outlook</h2>
+ <div class="three">
+  <div><h3>Advantages</h3><ul id="adv"></ul></div>
+  <div><h3>Limitations</h3><ul id="lim"></ul></div>
+  <div><h3>Future scope</h3><ul id="fut"></ul></div>
+ </div>
+ <h3>Conclusion</h3>
+ <p>SwiftShip Tracker brings custom objects, Flows, Apex, email alerts, Experience Cloud, Agentforce, Prompt Builder and role-based security into one parcel management solution. Customers get shipment information without waiting on manual support.</p>
+ <footer id="team"></footer>
+</section>
+
+</main>
+</div>
+<script>
+const TEAM = ['Member 1', 'Member 2', 'Member 3', 'Member 4']; // replace with your team names
+const ST = ['Booked', 'In Transit', 'Out for Delivery', 'Delivered'];
+const P = [
+ {id:1, name:'Textbooks box', st:1, wt:2.4, eta:'05 Oct 2026', loc:'Trichy hub', from:'Chennai', to:'Karur', s:'Arun Kumar', r:'Meena S'},
+ {id:2, name:'Phone accessories', st:0, wt:0.8, eta:'07 Oct 2026', loc:'Chennai pickup point', from:'Chennai', to:'Madurai', s:'Divya R', r:'Karthik P'},
+ {id:3, name:'Wedding gift', st:2, wt:5.1, eta:'02 Oct 2026', loc:'Karur local depot', from:'Coimbatore', to:'Karur', s:'Suresh M', r:'Lakshmi N'},
+ {id:4, name:'Laptop', st:3, wt:1.9, eta:'30 Sep 2026', loc:'Kulithalai', from:'Salem', to:'Kulithalai', s:'Ramesh K', r:'Priya D'},
+ {id:5, name:'Rice sacks', st:1, wt:12.5, eta:'06 Oct 2026', loc:'Madurai hub', from:'Madurai', to:'Chennai', s:'Nisha V', r:'Gokul S'}
+];
+const pid = n => 'P-' + String(n).padStart(3, '0');
+const $ = s => document.querySelector(s);
+const html = (el, h) => { el.innerHTML = h; return el; };
+const table = (el, head, rows) => html($(el), '<thead><tr>' + head.map(h => '<th>' + h + '</th>').join('') + '</tr></thead><tbody>' + rows.map(r => '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('') + '</tbody>');
+const list = (el, items) => html($(el), items.map(i => '<li>' + i + '</li>').join(''));
+
+/* ---- tracker demo ---- */
+function showParcel(p) {
+  html($('#pc'), '<div class="pid mono">' + pid(p.id) + '</div><div class="route">' + p.from + ' to ' + p.to + '</div><ol class="st">' +
+    ST.map((s, i) => '<li class="' + (i < p.st ? 'd' : i === p.st ? 'c' : '') + '">' + s + '</li>').join('') + '</ol><dl>' +
+    '<dt>Parcel name</dt><dd>' + p.name + '</dd><dt>Weight</dt><dd>' + p.wt + ' kg</dd><dt>Estimated delivery</dt><dd>' + p.eta + '</dd>' +
+    '<dt>Current location</dt><dd>' + p.loc + '</dd><dt>Sender</dt><dd>' + p.s + '</dd><dt>Receiver</dt><dd>' + p.r + '</dd></dl>');
+}
+function say(who, h) {
+  const m = document.createElement('div');
+  m.className = 'm ' + who;
+  m.innerHTML = h;
+  $('#log').appendChild(m);
+  $('#log').scrollTop = 1e6;
+}
+function ask(text) {
+  say('u', text.replace(/</g, '&lt;'));
+  const m = text.match(/p[-\s]?(\d+)/i);
+  const p = m && P.find(x => x.id === +m[1]);
+  if (!m) return say('a', 'Send a parcel ID, for example <b>Track parcel P-001</b>.');
+  if (!p) return say('a', 'No parcel found with ID ' + pid(+m[1]) + '. Check the ID on your booking confirmation.');
+  const upd = text.match(/update.*(booked|in transit|out for delivery|delivered)/i);
+  if (upd) {
+    p.st = ST.findIndex(s => s.toLowerCase() === upd[1].toLowerCase());
+    showParcel(p);
+    return say('a', 'Status of ' + pid(p.id) + ' is now <b>' + ST[p.st] + '</b>. The customer notification has been queued.');
+  }
+  showParcel(p);
+  say('a', '<b>Parcel Tracking Update</b><br>Parcel Name: ' + p.name + '<br>Parcel ID: ' + pid(p.id) + '<br>Status: ' + ST[p.st] + '<br>Weight: ' + p.wt + ' kg<br>Estimated Delivery Date: ' + p.eta);
+}
+say('a', 'Hi, I am the SwiftShip Tracker agent. Give me a parcel ID and I will look it up.');
+showParcel(P[0]);
+html($('#chips'), '');
+['Track parcel P-001', 'Track parcel P-003', 'Track parcel P-099', 'Update delivery status for parcel P-002 to In Transit'].forEach(t => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = t.length > 30 ? 'Update P-002 to In Transit' : t;
+  b.onclick = () => ask(t);
+  $('#chips').appendChild(b);
+});
+$('#f').onsubmit = e => { e.preventDefault(); const v = $('#q').value.trim(); if (v) ask(v); $('#q').value = ''; };
+
+/* ---- content tables ---- */
+table('#ps', ['Problem', 'Solution', 'Benefit'], [
+ ['Parcel booking is difficult', 'Parcel management in Salesforce', 'Centralized booking'],
+ ['Tracking requires support', 'Agentforce and Prompt Builder', 'Self-service tracking'],
+ ['Manual status updates', 'Salesforce Flows', 'Automated processes'],
+ ['Delivery communication gaps', 'Email alerts', 'Timely notifications'],
+ ['Scattered shipment information', 'Parcel, Delivery, Sender and Receiver objects', 'Structured data'],
+ ['Hard to monitor operations', 'Reports and dashboards', 'Better visibility'],
+ ['Users need different access', 'Profiles, roles and permission sets', 'Secure access']]);
+
+const G = ['Booking and records', 'Tracking and updates', 'Notifications and AI', 'Reporting and access'];
+const FR = [[1,'Parcel booking and record creation',0],[2,'Parcel status tracking',1],[3,'Weight management',0],[4,'Estimated delivery date management',0],[5,'Sender information management',0],[6,'Receiver information management',0],[7,'Delivery and current-location tracking',1],[8,'Agent parcel status updates',1],[9,'Automated customer notifications',2],[10,'AI-powered parcel tracking',2],[11,'Reports and dashboards',3],[12,'Customer access through Experience Cloud',3]];
+function drawFR(g) {
+  table('#fr', ['No', 'Requirement', 'Area'], FR.filter(r => g < 0 || r[2] === g).map(r => ['FR-' + r[0], r[1], G[r[2]]]));
+  document.querySelectorAll('#fr-f button').forEach((b, i) => b.setAttribute('aria-pressed', i - 1 === g));
+}
+['All'].concat(G).forEach((n, i) => {
+  const b = document.createElement('button');
+  b.textContent = n; b.onclick = () => drawFR(i - 1);
+  $('#fr-f').appendChild(b);
+});
+drawFR(-1);
+table('#nfr', ['Quality', 'Description'], [
+ ['Usability', 'Intuitive Salesforce and customer-facing interface'], ['Security', 'Role-based and field-level access control'],
+ ['Reliability', 'Accurate parcel status and delivery information'], ['Performance', 'Timely Flow and Agentforce responses'],
+ ['Availability', 'Salesforce cloud-based access'], ['Scalability', 'Supports growing parcel and delivery operations'],
+ ['Data integrity', 'Controlled access and relationship-based parcel data'], ['Maintainability', 'Flows, prompts, topics and configurations can be updated']]);
+table('#tech', ['Layer', 'Technology'], [
+ ['Platform', 'Salesforce Developer Edition'], ['UI', 'Lightning App Page, Lightning Record Pages, Experience Cloud'],
+ ['Database', 'Salesforce custom and standard objects'], ['Business logic', 'Flows, Apex classes'],
+ ['Automation', 'Record-triggered, auto-launched and scheduled flows'], ['AI', 'Agentforce, Prompt Builder'],
+ ['Notifications', 'Email alerts and templates'], ['Processing', 'Batch Apex'],
+ ['Security', 'Profiles, permission sets, role hierarchy, field-level security, sharing rules'], ['Reporting', 'Reports and dashboards']]);
+
+/* ---- data model ---- */
+const OBJ = {
+ Parcel: ['Parcel__c. Core parcel details, linked to Sender and Receiver, and tracked through Delivery.', [['Parcel ID', 'Auto Number', 'Format P-{000}'], ['Status', 'Picklist', 'Booked, In Transit, Out for Delivery, Delivered'], ['Weight', 'Number', 'Used in tracking responses'], ['Estimated Delivery', 'Date', 'Shown to customers'], ['Sender', 'Lookup', 'Sender__c']]],
+ Delivery: ['Delivery__c. Updated by agents during the parcel lifecycle.', [['Current Location', 'Geolocation', 'Updated as the parcel moves'], ['Estimated Delivery', 'Date', ''], ['Sender', 'Lookup', 'Sender__c'], ['Parcel', 'Lookup', 'Parcel__c']]],
+ Sender: ['Sender__c. Keeps sender history across parcels and supplies the email for confirmations.', [['Sender Address', 'Geolocation', ''], ['Sender Contact', 'Phone', ''], ['Sender Email', 'Email', 'Restricted to Admin and Agent']]],
+ Receiver: ['Receiver__c. Used by agents for delivery reference and completion emails.', [['Receiver Address', 'Geolocation', ''], ['Receiver Contact', 'Phone', 'Restricted to Admin and Agent'], ['Receiver Email', 'Email', ''], ['Sender', 'Lookup', 'Sender__c'], ['Parcel', 'Lookup', 'Parcel__c']]]
+};
+function drawObj(n) {
+  html($('#odesc'), OBJ[n][0]);
+  table('#ofields', ['Field', 'Type', 'Notes'], OBJ[n][1]);
+  document.querySelectorAll('#otabs button').forEach(b => b.setAttribute('aria-pressed', b.textContent === n));
+}
+Object.keys(OBJ).forEach(n => {
+  const b = document.createElement('button');
+  b.textContent = n; b.onclick = () => drawObj(n);
+  $('#otabs').appendChild(b);
+});
+drawObj('Parcel');
+
+/* ---- security ---- */
+const OB = ['Parcel', 'Delivery', 'Sender', 'Receiver', 'Case'];
+const ROLES = {
+ 'Admin': {a: ['Full', 'Full', 'Full', 'Full', 'Full'], f: [1, 1, 1]},
+ 'Delivery Agent': {a: ['Read, Edit', 'Read, Edit', 'Read, Edit', 'Read, Edit', ''], f: [1, 1, 1]},
+ 'Customer': {a: ['Read (own)', '', '', '', ''], f: [0, 0, 0]},
+ 'Support Staff': {a: ['Read', '', '', '', 'Access'], f: [0, 0, 0]}
+};
+Object.keys(ROLES).forEach(r => { const o = document.createElement('option'); o.textContent = r; $('#role').appendChild(o); });
+function drawRole() {
+  const r = ROLES[$('#role').value];
+  table('#perm', ['Object', 'Access'], OB.map((o, i) => [o, r.a[i] ? '<span class="yes">' + r.a[i] + '</span>' : '<span class="no">None</span>']));
+  html($('#fls'), 'Sender Email, Receiver Contact and Location Coordinates: ' + (r.f[0] ? 'visible to this profile.' : 'hidden from this profile.') + ' The Swift Ship permission set gives the agent user Read, Create and Edit on the four custom objects.');
+}
+$('#role').onchange = drawRole; drawRole();
+
+/* ---- sprints ---- */
+const SP = [['Sprint-1','Developer setup','USN-1','Create and configure the Salesforce environment',3,'High'],['Sprint-2','Data modeling','USN-2','Create Parcel, Delivery, Sender and Receiver objects with relationships',5,'High'],['Sprint-2','Data modeling','USN-3','Tabs and a Lightning App for SwiftShip modules',5,'High'],['Sprint-3','Automation','USN-4','Validate parcel details, mandatory fields and booking inputs',3,'High'],['Sprint-3','Automation','USN-5','Flows to update parcel status and delivery information',3,'High'],['Sprint-4','Apex','USN-6','Apex triggers and classes for parcel and delivery actions',5,'High'],['Sprint-4','Apex','USN-7','Batch Apex jobs to update parcel or delivery records',5,'High'],['Sprint-5','Reports','USN-8','Reports on parcel status, delivery performance and metrics',4,'High'],['Sprint-6','Dashboards and AI','USN-9','Dashboards plus Agentforce tracking assistance',4,'Medium']];
+const own = [0, 1, 2, 3, 3, 0, 1, 2, 3];
+table('#sp', ['Sprint', 'Epic', 'Story', 'Task', 'Points', 'Priority', 'Owner'], SP.map((r, i) => r.concat(TEAM[own[i] % TEAM.length])));
+html($('#spt'), 'Total: ' + SP.reduce((a, r) => a + r[4], 0) + ' story points across 9 stories.');
+
+/* ---- build log ---- */
+const MS = [
+ ['Salesforce Developer Org', 'Signed up at developer.salesforce.com, verified the email, set the password and reached Setup.'],
+ ['Custom objects', 'Created Parcel, Delivery, Sender and Receiver from Object Manager with reports, search and field history tracking turned on.'],
+ ['Tabs', 'Added a custom object tab for each object.'],
+ ['Fields and relationships', 'Parcel ID as auto number P-{000}, geolocation fields for locations and addresses, and lookups between the four objects.'],
+ ['Prompt Builder', 'Built the Retrieve Parcel Details prompt template with Parcel__c fields as resources, then activated it and tested with "Track parcel P-12345".'],
+ ['Flows', 'Auto-launched flow: Get Records, Action, Assignment. Saved as Parcel Details, activated, and given profile access.'],
+ ['Permission set', 'Swift Ship permission set with the Einstein Agent license: Read, Create and Edit on all four objects.'],
+ ['Agent user', 'Assigned the permission set to the agent user from the Users page.'],
+ ['Agentforce setup', 'Enabled the default agent, Einstein, Global Languages, Deploy Prompt Template and Agentforce.'],
+ ['Build the agent', 'Created the Parcel Updates subagent, attached the flow as an action, renamed the agent to SwiftShip Tracker and activated it.']
+];
+html($('#ms'), MS.map((m, i) => '<details><summary>' + (i < 6 ? 'Backend' : 'Agent') + ': ' + m[0] + '</summary><p>' + m[1] + '</p></details>').join(''));
+
+/* ---- testing ---- */
+const CK = ['Agent appears in Agentforce Agents', 'Subagent is listed, active and linked to the flow', 'Flow is activated and handles parcel ID input and retrieval', 'Agent preview answers "Track parcel ID P12345"', 'Status update request runs the flow', 'Parcel record shows the updated status'];
+html($('#chk'), CK.map((c, i) => '<label><input type="checkbox" data-i="' + i + '"> ' + c + '</label>').join(''));
+function chkCount() { const n = document.querySelectorAll('#chk input:checked').length; html($('#chkc'), n + ' of ' + CK.length + ' checks done'); }
+$('#chk').onchange = chkCount; chkCount();
+
+list('#adv', ['Parcel and customer data in one place', 'Clear booking and delivery visibility', 'Flows cut manual work', 'Self-service tracking with Agentforce', 'Timely notifications', 'Works with external logistics systems', 'Scales to more locations']);
+list('#lim', ['Needs accurate, current data', 'Depends on Salesforce configuration', 'Agent answers rely on well-set prompts', 'External integrations add complexity', 'Flow logic needs upkeep', 'Users need Salesforce or Experience Cloud access']);
+list('#fut', ['More parcel queries for Agentforce', 'Live delivery tracking', 'Wider Experience Cloud self-service', 'Delivery performance analytics', 'External logistics integrations', 'Sandbox and CI/CD deployment']);
+html($('#team'), 'Team: ' + TEAM.join(', '));
+
+/* ---- navigation ---- */
+const secs = [...document.querySelectorAll('section')];
+html($('#nav'), secs.map(s => '<a href="#' + s.id + '">' + s.dataset.t + '</a>').join(''));
+const links = [...document.querySelectorAll('#nav a')];
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.hash === '#' + e.target.id));
+}), {rootMargin: '-20% 0px -70% 0px'});
+secs.forEach(s => io.observe(s));
+$('#mb').onclick = () => { const o = $('#nav').classList.toggle('open'); $('#mb').setAttribute('aria-expanded', o); };
+links.forEach(a => a.addEventListener('click', () => { $('#nav').classList.remove('open'); $('#mb').setAttribute('aria-expanded', false); }));
+</script>
+</body>
+</html>
